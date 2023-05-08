@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-This module contains the function list_all which returns all documents
-in a collection
+This module contains the function list_all which returns all documents in a collection
 """
 from pymongo.collection import Collection
 from typing import List, Dict
