@@ -2,11 +2,9 @@
 """
 This module contains the function list_all which returns all documents in a collection
 """
-from pymongo.collection import Collection
-from typing import List, Dict
 
 
-def list_all(mongo_collection: Collection) -> List[Dict]:
+def list_all(mongo_collection):
     """
     Returns all documents in a collection
 
