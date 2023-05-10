@@ -30,6 +30,25 @@ def count_calls(method: Callable) -> Callable:
     return increment_calls
 
 
+def call_history(method: Callable) -> Callable:
+    """
+    """
+    @wraps(method)
+    def store_in_out(*args, **kwargs):
+        """
+        """
+        redis_r = args[0]._redis
+
+        input_key: str = str(method.__qualname__) + ":inputs"
+        redis_r.rpush(input_key, str(args[1:]))
+
+        output_key: str = str(method.__qualname__) + ":outputs"
+        method_output: Any = method(*args, **kwargs)
+        redis_r.rpush(output_key, str(method_output))
+        return method_output
+    return store_in_out
+
+
 class Cache:
     """
     Redis class that stores instance of the Redis client as a private variable
@@ -39,6 +58,7 @@ class Cache:
         self._redis.flushdb()
 
     @count_calls
+    @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         Store data in Redis instance
