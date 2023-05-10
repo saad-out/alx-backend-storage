@@ -32,7 +32,7 @@ class Cache:
     def get(
             self,
             key: str,
-            fn: Optional[Callable[[bytes], Any]]
+            fn: Optional[Callable[[bytes], Any]] = None
             ) -> Optional[Any]:
         """
         Get data from Redis instance
