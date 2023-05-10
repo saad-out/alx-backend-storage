@@ -3,8 +3,31 @@
 This module contains a class Cache that stores an instance of the Redis client
 """
 import redis
-from typing import Union, Callable, Optional, Any
 import uuid
+from typing import Union, Callable, Optional, Any
+from functools import wraps
+
+
+def count_calls(method: Callable) -> Callable:
+    """
+    Wrapper function that counts how many times methods of the Cache class are
+    called
+
+    Args:
+        method (Callable): method to wrap
+
+    Returns:
+        Callable: wrapped method
+    """
+    @wraps(method)
+    def increment_calls(*args, **kwargs):
+        """
+        Increment calls of method
+        """
+        redis_r = args[0]._redis
+        redis_r.incr(method.__qualname__)
+        return method(*args, **kwargs)
+    return increment_calls
 
 
 class Cache:
@@ -15,6 +38,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         Store data in Redis instance
