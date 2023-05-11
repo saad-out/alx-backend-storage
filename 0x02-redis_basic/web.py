@@ -30,7 +30,11 @@ def count_url_calls(fn: Callable) -> Callable:
             url = args[0]
         if kwargs:
             url = kwargs["url"] if "url" in kwargs else url
-        r.incr("count:{}".format(url))
+        if not r.get("count:{}".format(url)):
+            r.set("count:{}".format(url), 1)
+            r.expire("count:{}".format(url), 10)
+        else:
+            r.incr("count:{}".format(url))
         return fn(*args, **kwargs)
     return increment_url_count
 
