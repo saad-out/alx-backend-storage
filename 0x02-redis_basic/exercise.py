@@ -4,7 +4,7 @@ This module contains a class Cache that stores an instance of the Redis client
 """
 import redis
 import uuid
-from typing import Union, Callable, Optional, Any
+from typing import Union, Callable, Optional, Any, List, Set
 from functools import wraps
 
 
@@ -20,7 +20,7 @@ def count_calls(method: Callable) -> Callable:
         Callable: wrapped method
     """
     @wraps(method)
-    def increment_calls(*args, **kwargs):
+    def increment_calls(*args: Any, **kwargs: Any) -> Any:
         """
         Increment calls of method
         """
@@ -32,10 +32,19 @@ def count_calls(method: Callable) -> Callable:
 
 def call_history(method: Callable) -> Callable:
     """
+    Wrapper function that stores the history of inputs and outputs for a
+    particular function
+
+    Args:
+        method (Callable): method to wrap
+
+    Returns:
+        Callable: wrapped method
     """
     @wraps(method)
-    def store_in_out(*args, **kwargs):
+    def store_in_out(*args: Any, **kwargs: Any) -> Any:
         """
+        Store inputs and outputs of method
         """
         redis_r = args[0]._redis
 
@@ -47,6 +56,32 @@ def call_history(method: Callable) -> Callable:
         redis_r.rpush(output_key, str(method_output))
         return method_output
     return store_in_out
+
+
+def replay(method: Callable) -> None:
+    """
+    Display the history of calls of a particular function
+
+    Args:
+        method (Callable): method to display history of
+
+    Returns:
+        None
+    """
+    r = redis.Redis()
+    input_key: str = str(method.__qualname__) + ":inputs"
+    output_key: str = str(method.__qualname__) + ":outputs"
+
+    number_of_calls: int = int(r.get(method.__qualname__))
+    print("{} was called {} times:".format(method.__qualname__,
+                                           str(number_of_calls)))
+    inputs: List = r.lrange(input_key, 0, -1)
+    outputs: List = r.lrange(output_key, 0, -1)
+    history: Set = set(zip(inputs, outputs))
+    for pair in history:
+        print("{}(*{}) -> {}".format(method.__qualname__,
+                                     pair[0].decode("utf-8"),
+                                     pair[1].decode("utf-8")))
 
 
 class Cache:
