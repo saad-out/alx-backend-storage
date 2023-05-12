@@ -20,14 +20,14 @@ def count_calls(method: Callable) -> Callable:
         Callable: wrapped method
     """
     key: str = method.__qualname__
+
     @wraps(method)
-    def increment_calls(*args: Any, **kwargs: Any) -> Any:
+    def increment_calls(self, *args: Any, **kwargs: Any) -> Any:
         """
         Increment calls of method
         """
-        redis_r = args[0]._redis
-        redis_r.incr(key)
-        return method(*args, **kwargs)
+        self._redis.incr(key)
+        return method(self, *args, **kwargs)
     return increment_calls
 
 
