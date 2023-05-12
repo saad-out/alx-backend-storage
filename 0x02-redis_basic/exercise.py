@@ -76,7 +76,7 @@ def replay(method: Callable) -> None:
                                            str(number_of_calls)))
     inputs: List = r.lrange(input_key, 0, -1)
     outputs: List = r.lrange(output_key, 0, -1)
-    history: Set = set(zip(inputs, outputs))
+    history: List = list(zip(inputs, outputs))
     for pair in history:
         print("{}(*{}) -> {}".format(method.__qualname__,
                                      pair[0].decode("utf-8"),
