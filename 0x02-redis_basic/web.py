@@ -54,7 +54,6 @@ def get_page(url: str) -> str:
         html_content = str(page_cache)
     else:
         html_content = requests.get(url).text
-        r.set(url, html_content)
-        r.expire(url, 10)
+        r.setex(url, 10, html_content)
 
     return html_content
