@@ -43,18 +43,16 @@ def call_history(method: Callable) -> Callable:
         Callable: wrapped method
     """
     @wraps(method)
-    def store_in_out(*args: Any, **kwargs: Any) -> Any:
+    def store_in_out(self, *args: Any, **kwargs: Any) -> Any:
         """
         Store inputs and outputs of method
         """
-        redis_r = args[0]._redis
-
         input_key: str = str(method.__qualname__) + ":inputs"
-        redis_r.rpush(input_key, str(args[1:]))
+        self._redis.rpush(input_key, str(args))
 
         output_key: str = str(method.__qualname__) + ":outputs"
-        method_output: Any = method(*args, **kwargs)
-        redis_r.rpush(output_key, str(method_output))
+        method_output: Any = method(self, *args, **kwargs)
+        self._redis.rpush(output_key, str(method_output))
         return method_output
     return store_in_out
 
