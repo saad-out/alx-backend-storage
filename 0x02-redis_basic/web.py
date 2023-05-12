@@ -51,7 +51,7 @@ def get_page(url: str) -> str:
     page_cache: Optional[bytes] = r.get(url)
     html_content: Optional[str] = ''
     if page_cache:
-        html_content = str(page_cache)
+        html_content = page_cache.decode('utf-8')
     else:
         html_content = requests.get(url).text
         r.setex(url, 10, html_content)
